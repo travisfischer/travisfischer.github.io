@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/css/bootstrap.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-wip/js/bootstrap.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+<div id="content" class="container">
+<h1>Coffee Log</h1>
+<table id="brew-table">
+    <tr>
+    <th>Barista Name</th>
+    <th>Roast/Variety Name</th>
+    <th>Grind Setting</th>
+    <th>Beans Qty</th>
+    <th>Bloom Size</th>
+    <th>Pour Size</th>
+    <th>Rating</th>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+</table>
+<form id="brew-form" name="brew-form" onsubmit="return handleAddBrew(this);">
+    <input type="text" name="barista-name" placeholder="Barrista Name"></input>
+    <input type="text" name="roast" placeholder="Roast / Variety Name"></input>
+    <input type="text" name="grind" placeholder="Grind Setting"></input>
+    <input type="text" name="weight" placeholder="Beans Weight"></input>
+    <input type="text" name="bloom" placeholder="Bloom Size"></input>
+    <input type="text" name="pour" placeholder="Pour Size"></input>
+    <input id="add-brew-button" type="submit" value="Add Brew"/>
+</form>
+</div>
+
+<script type='text/javascript'>
+console.log('running head code');
+window.dataRef = new Firebase('https://tfischer-at-cars-test.firebaseio.com');
+window.brewsRef = new Firebase('https://tfischer-at-cars-test.firebaseio.com/brews');
+window.brewsRef.on('child_added', function(snapshot) {
+    console.log('running child added callback');
+    console.log('brew ', snapshot.val());
+    addBrewToTable(snapshot.val());
+});
+
+
+function addBrewToTable(brewObj) {
+    console.log('adding brew', brewObj);
+    
+    var tableRow = '<tr>' +
+        '<td>' + brewObj['barista-name'] + '</td>' +
+        '<td>' + brewObj['roast'] + '</td>' +
+        '<td>' + brewObj['grind'] + '</td>' +
+        '<td>' + brewObj['weight'] + '</td>' +
+        '<td>' + brewObj['bloom'] + '</td>' +
+        '<td>' + brewObj['pour'] + '</td>' +
+        '<td>No Rating</td>' +
+        '</tr>';
+    console.log(tableRow);
+    var tbody = $('table#brew-table tbody');
+    tbody.append(tableRow);
+}
+
+function handleAddBrew(form){
+    console.log("handle add brew");
+    console.log(form);
+    var inputs = form.children;
+    var len = inputs.length;
+    var brewObj = new Array();
+    var validBrew = true;
+    
+    for (var i = 0; i < len; i++) {
+            input = inputs[i];
+        if (input.type == 'text') {
+
+            console.log(input);
+            if (input.value == '') {
+                validBrew = false;
+            } else {
+                brewObj[input.name] = input.value;
+            }
+        }
+    }
+    
+    if (!validBrew) {
+        alert("All of the fields must be filled out to log a brew!");
+    } else {
+        var brewsCollection = window.dataRef.child('brews');
+        var pushRef = brewsCollection.push();
+        console.log(brewObj);
+        pushRef.set(brewObj);
+        
+    }
+    
+    return false;
+}
+
+</script>
+
+</body>
+</html>
